@@ -1,0 +1,4 @@
+UseDNS no
+Protocol 2
+ChallengeResponseAuthentication no
+Subsystem sftp /usr/lib/openssh/sftp-server

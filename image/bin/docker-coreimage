@@ -1,0 +1,25 @@
+#!/bin/bash
+set -e
+
+export DCICD="$0.d"
+
+. "$DCICD/functions.sh"
+
+if [ -z "$1" ]; then
+    echo "Usage: docker-coreimage <subcommand> [arguments]"
+    echo "  Available subcommands:"
+    for I in $(ls -1 $DCICD); do
+        DESC="$(getdesc $I)"
+        if [ -z "$DESC" ]; then continue; fi
+        printf "    %-10s %s\n" ${I##*/} "$DESC"
+    done
+    exit 1
+fi
+
+CMD="$1" ; shift
+
+if [ -x "$DCICD/$CMD" ]; then
+    /bin/bash "$DCICD/$CMD" "$@"
+else
+    die "Invalid command '$CMD'"
+fi

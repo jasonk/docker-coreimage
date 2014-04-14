@@ -1,0 +1,54 @@
+#!/bin/bash
+### Enable/disable services
+## To enable services:
+##   docker-coreimage service <service-name>=on [...]
+## To disable services:
+##   docker-coreimage service <service-name>=off [...]
+## To check the state of services:
+##   docker-coreimage service <service-name>
+## To check the state of all services:
+##   docker-coreimage service
+
+set -e
+
+. "$(dirname "$0")/functions.sh"
+
+if [[ $# == 0 ]]; then
+    set -- $(ls -1 /srv/services)
+fi
+
+RESULT=()
+
+for ARG in "$@"; do
+    if [[ $ARG =~ (.*)=(.*) ]]; then
+        SRV="${BASH_REMATCH[1]}"
+        STATE="${BASH_REMATCH[2]}"
+    else
+        SRV="$ARG"
+        STATE=""
+    fi
+    SRC="/srv/services/$SRV"
+    if [ -d "$SRC" ]; then
+        TGT="/etc/sv/$SRV"
+    elif [ -f "$SRC" ]; then
+        TGT="/etc/xinetd.d/$SRV"
+    else
+        die "Invalid service '$SRV'";
+    fi
+
+    if [ "$STATE" = "off" ]; then
+        rm -f $TGT
+    elif [ "$STATE" = "on" ]; then
+        ln -s $SRC $TGT
+    fi
+
+    if [ -L "$TGT" ]; then
+        RESULT+=( "$SRV=on" )
+    elif [ ! -e $TGT ]; then
+        RESULT+=(  "$SRV=off" )
+    else
+        RESULT+=(  "$SRV=error" )
+    fi
+done
+
+echo "${RESULT[@]}"

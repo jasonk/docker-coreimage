@@ -1,0 +1,14 @@
+#!/bin/bash
+### Get help on a subcommand
+## To get help on the service command:
+##   docker-coreimage help service
+
+. "$(dirname "$0")/functions.sh"
+
+for ARG in "$@"; do
+    if [ -f "$DCICD/$ARG" ]; then
+        sed -n 's/^## //p' "$DCICD/$ARG"
+    else
+        die "Invalid command '$ARG'"
+    fi
+done

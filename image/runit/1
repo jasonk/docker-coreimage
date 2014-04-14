@@ -1,0 +1,18 @@
+#!/bin/sh
+# one-time system startup tasks
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+touch /etc/runit/stopit
+chmod 0 /etc/runit/stopit
+
+docker-coreimage environment --update
+. /srv/environment.sh
+
+for start in /srv/startup/*; do
+    if [ -x $start ]; then
+        echo "Running startup script '$start'"
+        $start
+        . /srv/environment.sh
+    fi
+done
