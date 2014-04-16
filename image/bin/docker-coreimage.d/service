@@ -29,7 +29,7 @@ for ARG in "$@"; do
     fi
     SRC="/srv/services/$SRV"
     if [ -d "$SRC" ]; then
-        TGT="/etc/sv/$SRV"
+        TGT="/etc/service/$SRV"
     elif [ -f "$SRC" ]; then
         TGT="/etc/xinetd.d/$SRV"
     else

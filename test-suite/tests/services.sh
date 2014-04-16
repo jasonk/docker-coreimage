@@ -2,8 +2,18 @@
 
 describe "critical services are running"
 
+ps xauwwww
+
+it_enables_xinetd() {
+    test -L "/etc/service/xinetd"
+}
+
 it_runs_xinetd() {
     test -n "$(pidof xinetd)"
+}
+
+it_enables_cron() {
+    test -L "/etc/service/cron"
 }
 
 it_runs_cron() {

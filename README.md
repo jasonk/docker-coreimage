@@ -21,8 +21,6 @@ What is included in this image?
     * super-server daemon
  * [cron](http://ftp.isc.org/isc/cron/)
     * for periodic task running
- * [openssh](http://www.openssh.com/)
-    * SSH server for remote access
  * [docker-utils](http://github.com/jasonk/docker-utils)
    * Helpful utility scripts for docker environments
 
@@ -48,6 +46,25 @@ source code if you want to see the details of how each of these things is done.
 See the [Wiki](http://github.com/jasonk/docker-coreimage/wiki) for more details
 about how to perform common tasks.
 
+Test Suite
+==========
+
+The startup process for this image includes a script that checks whether
+/test-suite is a mountpoint.  If it is a mountpoint, then the startup script
+launches a background process that sleeps for 15 seconds, then changes
+directory to /test-suite, and runs any executables it finds there.
+
+You can use this to run an automated test suite against the image, by mounting
+a local directory on /test-suite, like so:
+
+    docker run -v /path/to/test-suite:/test-suite -t -i --rm jasonk/coreimage
+
+The distribution includes a test harness that uses
+[roundup.sh](https://github.com/bmizerany/roundup) to run any test scripts
+found in the tests/ directory.  You can either use that harness as-is and add
+your own tests to the tests directory, or just replace the whole thing with
+whatever test runner you would prefer.
+
 Configuring Services
 ====================
 
@@ -58,7 +75,7 @@ while xinetd is very helpful for launching management processes and things
 that don't need to be running all the time.
 
 The default configuration uses runit to manage xinetd and cron, and uses xinetd
-to manage openssh-server.
+to manage some helpful network utilities.
 
 The service configuration for all services is stored in /srv/services.  You can
 see what services are available in an image by looking at the contents of this
