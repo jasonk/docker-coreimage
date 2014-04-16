@@ -7,9 +7,9 @@ IMAGEFILES = $(shell find image -type f)
 
 all: build
 
-.build.%: $(IMAGEFILES)
-	docker build --no-cache -t $(NAME):$@ --rm image
-	@touch .build.$@
+.build.$(VERSION): $(IMAGEFILES)
+	docker build --no-cache -t $(NAME):$(VERSION) --rm image
+	@touch $@
 
 build: .build.$(VERSION)
 

@@ -1,11 +1,13 @@
 #!/bin/bash
 
-echo "Run test suite?"
-ls -l /test-suite
-mount
+mountpoint /test-suite > /dev/null || exit 0
 
-if [ -f /test-suite/run-test-suite.sh ]; then
-    ( sleep 15 ; /test-suite/run-test-suite.sh ) &
-fi
+(
+    sleep 15
+    cd /test-suite
+    for I in *; do
+        if [ -f $I -a -x $I ]; then ./$I; fi
+    done
+) &
 
 exit 0
