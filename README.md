@@ -40,8 +40,9 @@ Configuration Tool
 ==================
 
 This image contains a very helpful tool, named 'docker-coreimage'.  You can use
-it to configure all of the aspects mentioned below.  I recommend reviewing the
-source code if you want to see the details of how each of these things is done.
+it to easily configure the most important parts of the container.  I recommend
+reviewing the source code if you want to see the details of how each of these
+things is done.
 
 See the [Wiki](http://github.com/jasonk/docker-coreimage/wiki) for more details
 about how to perform common tasks.
@@ -101,15 +102,13 @@ tool](http://github.com/jasonk/docker-builder), or create your own Dockerfile.
     # Set correct environment variables.
     ENV HOME /root
 
-Additional Reading
-==================
-
- * http://rubyists.github.io/2011/05/02/runit-for-ruby-and-everything-else.html
- * http://chneukirchen.org/talks/ignite/chneukirchen2013slcon.pdf
+    # Run whatever additional commands you want to run here..
+    RUN ....
 
 Author and Related Information
 ==============================
 
+This image was created and is maintained by
 Jason Kohles <email@jasonkohles.com> http://www.jasonkohles.com/
 
   * [Github](http://github.com/jasonk/docker-coreimage)
