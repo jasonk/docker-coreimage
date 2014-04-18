@@ -15,6 +15,8 @@ What is included in this image?
 
  * [Ubuntu 13.10 - Saucy Salamander](http://www.ubuntu.com/)
     * base image 
+ * [ansible](http://www.ansible.com/home)
+    * ansible for it automation
  * [runit](http://smarden.org/runit/)
     * as the init process and service supervisor
  * [xinetd](http://www.xinetd.org)

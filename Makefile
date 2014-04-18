@@ -1,5 +1,5 @@
 NAME ?= jasonk/coreimage
-VERSION ?= 0.0.3
+VERSION ?= 0.0.4
 
 IMAGEFILES = $(shell find image -type f)
 

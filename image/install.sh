@@ -44,7 +44,12 @@ echo 'APT::Install-Recommends "0";' > /etc/apt/apt.conf.d/no-recommends
 echo 'force-unsafe-io' > /etc/dpkg/dpkg.cfg.d/apt-speedup
 echo 'Acquire::http {No-Cache=True;};' > /etc/apt/apt.conf.d/no-http-cache
 
+# Add repositories
+add-apt-repository -y ppa:rquillo/ansible
+
 apt-get update
+
+apt-get install ansible
 
 # Divert some things we want to avoid running
 for I in /sbin/initctl /usr/sbin/ischroot; do
@@ -55,10 +60,16 @@ done
 # Remove some packages
 dpkg --purge "${REMOVE_PACKAGES[@]}"
 
+# Install repositories
+for I in "${INSTALL_REPOSITORIES[@]}"; do
+    add-apt-repository "$I"
+done
+
 # Install some packages
 apt-get install -y "${INSTALL_PACKAGES[@]}"
 
 cp -a runit /etc/
+
 #apt-get install -y language-pack-en
 #rm -f /var/lib/locales/supported.d/*
 #echo "en_US ISO-8859-1" > /var/lib/locales/supported.d/en
