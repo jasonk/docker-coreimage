@@ -1,0 +1,150 @@
+#!/bin/bash
+### Remove cruft - mostly useful for removing excess stuff from images
+## To see a list of available categories
+##   docker-coreimage cleanup --list
+## To cleanup a specific category of items:
+##   docker-coreimage cleanup --remove <category> [category...]
+## To show what globs are in a category:
+##   docker-coreimage cleanup --globs <category> [category...]
+## To show what files would be removed by a category:
+##   docker-coreimage cleanup --show <category> [category...]
+##
+## To show what commands would be run by a command-line, include --fake:
+##   docker-coreimage cleanup --remove ALL --fake
+##
+## You can also use the category 'ALL' to indicate nearly all the categories
+## -- currently everything except 'service-configurations'.  If you want to
+## cleanup all categories including 'service-configurations',
+##   docker-coreimage cleanup --remove ALL
+## 
+## If you really want to cleanup all categories, including
+## 'service-configurations', then use 'REALLY_SERIOUSLY_ALL':
+##   docker-coreimage cleanup --remove REALLY_SERIOUSLY_ALL
+
+set -e
+shopt -s nullglob
+shopt -os noglob
+
+SOURCEFILES=($0)
+
+. "$(dirname "$0")/functions.sh"
+
+function list-categories() {
+    sed -n 's/^#![!*] //p' "${SOURCEFILES[@]}"
+}
+
+function all-categories() {
+    sed -n 's/^#!\* //p' "${SOURCEFILES[@]}"
+}
+
+function scary-categories() {
+    sed -n 's/^#!! //p' "${SOURCEFILES[@]}"
+}
+
+function category-contents() {
+    local CAT="$1"
+    if [ -z "$CAT" ]; then return; fi
+    sed -n "/^#![!*] $CAT/,/^$/p" "${SOURCEFILES[@]}"
+}
+
+function globs() {
+    category-contents "$1" | sed -n 's/^#!g //p'
+}
+function categories() {
+    echo "${CATEGORIES[@]}" | xargs -n1 | sort -u
+}
+#function glob() {
+#    shopt -ou noglob
+#    ls -1 $@ 2>/dev/null | xargs -n1 | sort -u
+#    shopt -os noglob
+#}
+
+#function files() {
+#    shopt -ou noglob
+#    for CAT in "$@"; do
+#        ls -1 $(globs "$1") 2>/dev/null | xargs -n1 | sort -u
+#    done
+#    shopt -os noglob
+#}
+function files() {
+    shopt -ou noglob
+    find -xs "$@" 2>/dev/null
+    shopt -os noglob
+}
+
+#!! service-configurations
+#!g /etc/ssh/ssh_host_*
+#!g /etc/hostid
+
+#!* apt-caches
+#!g /var/cache/apt/archives/*.deb
+#!g /var/cache/apt/archives/partial/*.deb
+#!g /var/cache/apt/*.bin
+
+#!* documentation
+#!g /usr/share/man
+#!g /usr/local/share/man
+#!g /usr/local/man
+#!g /usr/share/doc
+
+#!* useless-package-cruft
+#!g /etc/X11
+#!g /etc/init /etc/init.d
+#!g /etc/cron.daily/standard
+
+#!* tempfiles
+#!g /tmp/*
+#!g /var/tmp/*
+
+#!* logfiles
+#!g /var/log/*.log
+#!g /var/log/*/*.log
+#!g /var/log/upstart
+
+CATEGORIES=()
+SHOW=false
+REMOVE=false
+GLOBS=false
+LIST=false
+FAKE=""
+
+if [ $# = 1 -a $1 = "--list" ]; then list-categories ; exit ; fi
+
+for ARG in "$@"; do
+    case "$ARG" in
+        --globs)    GLOBS=true ; LIST=true ;;
+        --show)     SHOW=true  ; LIST=true ;;
+        --remove)   REMOVE=true ;;
+        --list)     LIST=true   ;;
+        --fake)     FAKE="echo" ;;
+        --file=*)   SOURCEFILES+=( ${ARG#--file=} ) ;;
+        --*) echo "Invalid argument: $ARG" 1>&2 ; exit 1 ;;
+        ALL) CATEGORIES+=( $(all-categories) ) ;;
+        REALLY_SERIOUSLY_ALL) CATEGORIES+=( $(list-categories) ) ;;
+        *) CATEGORIES+=( "$ARG" ) ;;
+    esac
+done
+
+for CAT in $( categories | sort -u); do
+    INDENT=""
+    if [ $LIST = true ]; then
+        echo "$CAT"
+        INDENT+="    "
+    fi
+
+    for GLOB in $(globs $CAT); do
+        IND=$INDENT
+        if [ $GLOBS = true ]; then
+            echo "$IND$GLOB"
+            IND+="    "
+        fi
+        if [ $SHOW = true ]; then
+            for FILE in $(files $GLOB); do
+                echo "$IND$FILE"
+            done
+        fi
+    done
+    if [ $REMOVE = true ]; then
+        $FAKE rm -rf $(globs $CAT)
+    fi
+done

@@ -1,97 +1,63 @@
 #!/bin/bash
 set -e -x
 
-INSTALL_PACKAGES=(
+INSTALL_PPAS="
+    ppa:rquillo/ansible
+"
+
+INSTALL_PACKAGES="
     runit
     socklog-run
     xinetd
-    software-properties-common
-    apt-transport-https
     curl
     unzip
     pwgen
     cron
     openssh-server
-);
-REMOVE_PACKAGES=(
+    ansible
+";
+
+REMOVE_PACKAGES="
     resolvconf ubuntu-minimal vim-common vim-tiny ntpdate
-);
+";
+
+SERVICE_STATES="
+    xinetd=on
+    cron=on
+    sshd=off
+";
 
 ###############################################################################
 
 cd "$(dirname "$0")"
 
-test -d /srv || mkdir /srv
-cp -a srv/* /srv/
-
-cp -a bin/* /usr/bin/
-
-docker-coreimage environment --update
-
-. /srv/environment.sh
-
-# Install our own sources.list
-cat <<END > /etc/apt/sources.list
-deb http://archive.ubuntu.com/ubuntu saucy main restricted universe
-deb http://archive.ubuntu.com/ubuntu saucy-updates main restricted universe
-deb http://archive.ubuntu.com/ubuntu saucy-security main restricted universe
-END
-rm -f /etc/apt/sources.list.d/*.list
-
-# Configure apt
-echo 'APT::Install-Suggests "0";' > /etc/apt/apt.conf.d/no-suggests
-echo 'APT::Install-Recommends "0";' > /etc/apt/apt.conf.d/no-recommends
-echo 'force-unsafe-io' > /etc/dpkg/dpkg.cfg.d/apt-speedup
-echo 'Acquire::http {No-Cache=True;};' > /etc/apt/apt.conf.d/no-http-cache
-
-apt-get update
-
-# Divert some things we want to avoid running
-for I in /sbin/initctl /usr/sbin/ischroot; do
-    dpkg-divert --local --rename --add $I
-    ln -sf /usr/bin/log-diversion $I
+# Copy the raw filesystem directories into the filesystem
+for I in srv usr etc; do
+    test -d /$I || mkdir /$I
+    cp -R $I/* /$I/
 done
 
+# Update the environment with the files from /srv/environment
+docker-coreimage environment --update
+# And bring that environment into this script
+. /srv/environment.sh
+
+# Configure diversions
+./configure-diversions.sh
+
+# Configure apt
+./configure-apt.sh
+
+# Add any ppa repositories
+test -n "$INSTALL_PPAS" && add-apt-repository -y $INSTALL_PPAS
+
 # Remove some packages
-dpkg --purge "${REMOVE_PACKAGES[@]}"
+test -n "$REMOVE_PACKAGES" && dpkg --purge $REMOVE_PACKAGES
 
 # Install some packages
-apt-get install -y "${INSTALL_PACKAGES[@]}"
+test -n "$INSTALL_PACKAGES" && apt-get install -y $INSTALL_PACKAGES
 
-cp -a runit /etc/
+test -n "$SERVICE_STATES" && docker-coreimage service $SERVICE_STATES
 
-#apt-get install -y language-pack-en
-#rm -f /var/lib/locales/supported.d/*
-#echo "en_US ISO-8859-1" > /var/lib/locales/supported.d/en
-#locale-gen en_US
-
-dpkg -l | egrep '^rc ' | awk '{print $2}' | xargs dpkg --purge
-
-docker-coreimage service xinetd=on cron=on sshd=off
-
-# Install configuration files
-cp config/sshd_config /etc/ssh/sshd_config
-
-# Add repositories
-add-apt-repository -y ppa:rquillo/ansible
-apt-get update
-apt-get install -y ansible
-
-
-rm -rf \
-    /var/cache/apt/archives/*.deb           \
-    /var/cache/apt/archives/partial/*.deb   \
-    /var/cache/apt/*.bin                    \
-    /usr/share/man                          \
-    /usr/local/share/man                    \
-    /usr/local/man                          \
-    /usr/share/doc                          \
-    /etc/X11                                \
-    /etc/init /etc/init.d                   \
-    /tmp/* /var/tmp/*                       \
-    /etc/ssh/ssh_host_*                     \
-    /etc/cron.daily/standard                \
-    /var/log/*.log /var/log/*/*.log         \
-    /var/log/upstart                        \
-
+docker-coreimage cleanup --remove REALLY_SERIOUSLY_ALL
 apt-get clean

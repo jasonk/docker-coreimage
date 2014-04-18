@@ -1,0 +1,57 @@
+#!/bin/bash
+### Configure a host with ansible
+##  Add roles to this host
+##   docker-coreimage ansible add-role <role-name>
+##   docker-coreimage ansible add-roles <role-name> [role-name...]
+##  List the roles that apply to this host
+##   docker-coreimage ansible list-roles
+##  Rebuild the main playbook file
+##   docker-coreimage ansible build-playbook
+##  Apply the ansible configuration to the host
+##   docker-coreimage ansible apply
+
+set -e
+shopt -o nullglob
+
+CMD="$1"
+shift;
+
+test -n "$CMD" || usage;
+
+export ANSIBLE_LIBRARY=/srv/ansible/library:/usr/share/ansible
+
+cd /srv/ansible
+
+function roles() {
+    for I in $(egrep -v '^#' roles.txt | xargs -n1 | sort -u); do
+        if [ -d roles/$I ]; then
+            echo "$I"
+        fi
+    done
+}
+
+case "$CMD" in
+    add-role|add-roles) echo "$@" >> /srv/ansible/roles.txt ;;
+    list-roles) roles ;;
+    build-playbook)
+        VARS="$(ls -1 vars/*.yml)"
+        ROLES="$(egrep -v '^#' roles.txt | xargs -n1 | sort -u)"
+        (
+            echo "---"
+            echo "- hosts: localhost"
+            echo "  gather_facts: True"
+            if [ -n "$VARS" ]; then
+                echo "  vars_files:"
+                for F in vars/*.yml; do echo "    - $F"; done
+            fi
+            if [ -n "$ROLES" ]; then
+                echo "  roles:"
+                for R in $(roles); do echo "    - $R"; done
+            fi
+        ) > playbook.yml
+        ;;
+    apply)
+        ansible-playbook -c local -i localhost, playbook.yml -l localhost "$@"
+        ;;
+    *) usage ;;
+esac
