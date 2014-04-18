@@ -44,12 +44,7 @@ echo 'APT::Install-Recommends "0";' > /etc/apt/apt.conf.d/no-recommends
 echo 'force-unsafe-io' > /etc/dpkg/dpkg.cfg.d/apt-speedup
 echo 'Acquire::http {No-Cache=True;};' > /etc/apt/apt.conf.d/no-http-cache
 
-# Add repositories
-add-apt-repository -y ppa:rquillo/ansible
-
 apt-get update
-
-apt-get install ansible
 
 # Divert some things we want to avoid running
 for I in /sbin/initctl /usr/sbin/ischroot; do
@@ -59,11 +54,6 @@ done
 
 # Remove some packages
 dpkg --purge "${REMOVE_PACKAGES[@]}"
-
-# Install repositories
-for I in "${INSTALL_REPOSITORIES[@]}"; do
-    add-apt-repository "$I"
-done
 
 # Install some packages
 apt-get install -y "${INSTALL_PACKAGES[@]}"
@@ -81,6 +71,12 @@ docker-coreimage service xinetd=on cron=on sshd=off
 
 # Install configuration files
 cp config/sshd_config /etc/ssh/sshd_config
+
+# Add repositories
+add-apt-repository -y ppa:rquillo/ansible
+apt-get update
+apt-get install -y ansible
+
 
 rm -rf \
     /var/cache/apt/archives/*.deb           \
