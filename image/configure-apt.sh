@@ -1,10 +1,10 @@
 #!/bin/bash
-set -e -x
+set -e
 
 URL=${APT_URL:-http://archive.ubuntu.com/ubuntu}
 REL=${APT_RELEASE:-saucy}
-SUFF="${APT_SUFFIXES:-updates security}"
-COMPS="${APT_COMPONENTS:-main restricted universe}"
+SUFF=${APT_SUFFIXES:-updates security}
+COMPS=${APT_COMPONENTS:-main restricted universe}
 
 HOLD_PACKAGES="
     upstart
@@ -22,7 +22,7 @@ INSTALL_PACKAGES="
 (
     echo "deb $URL $REL $COMPS"
     for I in $SUFF; do
-        echo "deb $URL $REL-$SUFF $COMPS"
+        echo "deb $URL $REL-$I $COMPS"
     done
 ) > /etc/apt/sources.list
 
