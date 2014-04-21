@@ -15,6 +15,7 @@ INSTALL_PACKAGES="
     cron
     openssh-server
     ansible
+    rsync
 ";
 
 REMOVE_PACKAGES="
