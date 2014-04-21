@@ -1,0 +1,8 @@
+match   /etc/X11
+match   /etc/init
+match   /etc/init.d
+match   /etc/cron.daily/standard
+
+match   /var/cache/debconf/*-old
+find    /run/resolvconf
+match   /etc/update-motd.d/*

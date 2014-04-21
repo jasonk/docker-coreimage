@@ -16,6 +16,7 @@ INSTALL_PACKAGES="
     openssh-server
     ansible
     rsync
+    git
 ";
 
 REMOVE_PACKAGES="
@@ -56,9 +57,12 @@ test -n "$INSTALL_PPAS" && add-apt-repository -y $INSTALL_PPAS
 test -n "$REMOVE_PACKAGES" && dpkg --purge $REMOVE_PACKAGES
 
 # Install some packages
-test -n "$INSTALL_PACKAGES" && apt-get install -y $INSTALL_PACKAGES
+test -n "$INSTALL_PACKAGES" && apt-get install -qy $INSTALL_PACKAGES
 
 test -n "$SERVICE_STATES" && docker-coreimage service $SERVICE_STATES
 
-docker-coreimage cleanup --remove REALLY_SERIOUSLY_ALL
-apt-get clean
+./cleanup.sh
+
+# Install my docker-utils
+git clone http://github.com/jasonk/docker-utils
+cp -a docker-utils/bin/* /usr/bin/

@@ -1,0 +1,3 @@
+#!SCARY
+match /etc/ssh/ssh_host_*
+match /etc/hostid

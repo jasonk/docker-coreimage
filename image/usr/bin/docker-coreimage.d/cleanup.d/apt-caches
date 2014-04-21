@@ -1,0 +1,3 @@
+match /var/cache/apt/archives/*.deb
+match /var/cache/apt/archives/partial/*.deb
+match /var/cache/apt/*.bin

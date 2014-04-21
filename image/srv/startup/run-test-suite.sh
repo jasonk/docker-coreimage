@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mountpoint /test-suite > /dev/null || exit 0
+mountpoint /test-suite > /dev/null 2>&1 || exit 0
 
 (
     sleep 15
