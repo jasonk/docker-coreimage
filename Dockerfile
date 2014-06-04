@@ -1,7 +1,6 @@
-FROM ubuntu:13.10
+FROM ubuntu:trusty
 MAINTAINER Jason Kohles <email@jasonkohles.com>
 
-ADD . /.build/
+ADD . /.build
 RUN /.build/install.sh && rm -rf /.build
-
 CMD [ "/sbin/runit" ]

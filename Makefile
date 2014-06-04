@@ -1,5 +1,5 @@
 NAME ?= jasonk/coreimage
-VERSION ?= 0.0.5
+VERSION ?= 0.0.7
 
 IMAGEFILES = $(shell find image -type f)
 
@@ -8,7 +8,7 @@ IMAGEFILES = $(shell find image -type f)
 all: build
 
 .build.$(VERSION): $(IMAGEFILES)
-	docker build --no-cache -t $(NAME):$(VERSION) --rm image
+	docker build --no-cache -t $(NAME):$(VERSION) --rm .
 	@touch $@
 
 build: .build.$(VERSION)
