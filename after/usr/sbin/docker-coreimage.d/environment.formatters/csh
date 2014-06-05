@@ -1,0 +1,4 @@
+#!/bin/bash
+### csh or tcsh shell format (using 'setenv')
+
+formatdump "setenv %s \"%s\"\n"

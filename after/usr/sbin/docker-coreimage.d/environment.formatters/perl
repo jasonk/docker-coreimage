@@ -1,0 +1,6 @@
+#!/bin/bash
+### perl format
+
+echo "#!/usr/bin/perl -w"
+formatdump "\$ENV{%s} = \"%s\";\n"
+echo "return 1;"

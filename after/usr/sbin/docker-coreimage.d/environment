@@ -1,0 +1,124 @@
+#!/bin/bash
+### Dump the environment from /etc/environment.d
+## Usage: docker-coreimage environment <command|format>
+##
+## Available commands:
+##  --update    Update /etc/environment.* files
+##  --formats   List the available formats
+##
+## To display as json:
+##   docker-coreimage environment json
+## To display as bash settings
+##   docker-coreimage environment bash
+##
+## By default environment variables are loaded from /etc/environment.d.
+## You can change the search location by setting
+## $DOCKER_COREIMAGE_ENVIRONMENT_DIRS and you can add additional
+## directories by simply passing arguments that include a slash (before any
+## command or format arguments).
+##
+## You can also find the environment variables in /etc/environment.* files.
+## You can update these files on demand by running docker-coreimage
+## environment --update.  This just updates whatever files already exist,
+## so if you want to add another format to that list, just create a file
+## there and then run --update:
+##      touch /etc/environment.xml
+##      docker-coreimage environment --update
+## Or just create it manually:
+##      docker-coreimage environment xml > /etc/environment.xml
+
+set -e
+
+. "$(dirname "$0")/functions.sh"
+
+declare -A VARS
+function loadenv() {
+    for DIR in "$@"; do
+        if [ -d "$DIR" ]; then
+            pushd "$DIR" >/dev/null
+            for I in *; do VARS[$I]="$(head -1 $I)"; done
+            popd >/dev/null
+        fi
+    done
+}
+
+if [ -n "$DOCKER_COREIMAGE_ENVIRONMENT_DIRS" ]; then
+    loadenv $DOCKER_COREIMAGE_ENVIRONMENT_DIRS
+else
+    loadenv /etc/environment.d
+fi
+
+declare -A FORMATTERS
+for F in $0.formatters/*; do
+    FORMATTERS[$(basename "$F")]=$F
+done
+
+function formatters() {
+    for key in "${!FORMATTERS[@]}"; do echo "$key"; done
+}
+
+function keys() {
+    for key in "${!VARS[@]}"; do echo "$key"; done
+}
+
+function formatdump() {
+    local FMT="${1:?Must specify format for formatdump}"
+    for key in "${!VARS[@]}"; do
+        printf "$FMT" "$key" "${VARS[$key]}"
+    done
+}
+
+function format() {
+    local FMT="${FORMATTERS[$1]}"
+    if [ -z "$FMT" ]; then
+        die "Invalid format '$1'"
+    fi
+    . "$FMT"
+}
+
+function list_existing_files() {
+    local DIR="${1:-/srv}"
+    for I in $DIR/environment.*; do
+        if [ -f $I ]; then echo $I; fi
+    done
+}
+function list_existing_formats() {
+    for F in $(list_existing_files); do
+        echo "${F##*.}"
+    done
+}
+
+echo "FILES=$(list_existing_files)"
+echo "FORMATS=$(list_existing_formats)"
+function do_update() {
+    for FMT in "$(list_existing_formats)"; do
+        echo "Updating environment.$FMT"
+    done
+}
+
+function list_formats() {
+    echo "Available formatters:"
+    for I in $(formatters); do
+        echo "$I: $(getdesc "${FORMATTERS[$I]}")"
+    done
+}
+
+if [[ $# == 0 ]]; then usage; fi
+
+COMMAND=""
+FMTS=()
+while [[ "$1" =~ / ]]; do loadenv "$1" ; shift ; done
+if [[ "$1" == "--update" ]]; then
+    do_update
+    exit
+elif [[ "$1" == "--formats" ]]; then
+    list_formats
+    exit
+fi
+
+if [ -n "${FORMATTERS[$1]}" ]; then
+    format "$1"
+    exit
+fi
+
+usage

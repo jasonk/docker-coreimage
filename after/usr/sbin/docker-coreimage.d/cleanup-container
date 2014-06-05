@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# apt-caches
+rm -f /var/cache/apt/archives/*.deb         \
+    /var/cache/apt/archives/partial/*.deb   \
+    /var/cache/apt/*.bin
+
+# documentation
+rm -rf /usr/share/man /usr/local/share/man /usr/local/man /usr/share/doc
+
+# Logs
+find /var/log -name \*.log -print0 | xargs -0 rm -f
+rm -rf /var/log/upstart
+
+# tmpfiles
+rm -rf /tmp/* /var/tmp/*
+
+# useless package cruft
+rm -rf /etc/X11 /etc/init /etc/init.d
+rm -f /etc/cron.daily/standard
+rm -rf /var/cache/debconf/*-old /run/resolvconf /etc/update-motd.d/*

@@ -1,0 +1,4 @@
+#!/bin/bash
+### CSV - Comma Separated Values
+
+formatdump "%s,\"%s\"\n"

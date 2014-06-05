@@ -1,4 +1,0 @@
-match /usr/share/man
-match /usr/local/share/man
-match /usr/local/man
-match /usr/share/doc

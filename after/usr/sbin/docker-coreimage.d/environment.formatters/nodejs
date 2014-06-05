@@ -1,0 +1,4 @@
+#!/bin/bash
+### NodeJS - Loads environment into node (using process.env)
+
+formatdump "process.env[\"%s\"] = \"%s\";\n"

@@ -1,0 +1,31 @@
+#!/bin/bash
+set -x
+### Run the test suite from the indicated directory
+## docker-coreimage run-test-suite /test-suite
+##
+## If the second argument is a number, then wait that many seconds before
+## beginning (used by the startup scripts to ensure that the system has
+## settled and moved into runit's stage 2 before the suite starts).
+
+. "$(dirname "$0")/functions.sh"
+
+DIR="$1"
+test -n "$DIR" || die "Must specify path to test suite"
+
+if [ -n "$2" ]; then
+    COUNTER=$2
+    while [ $COUNTER -gt 1 ]; do
+        echo "Waiting to start test-suite.... $COUNTER"
+        let COUNTER=COUNTER-1
+        sleep 1
+    done
+    echo "Timer elapsed, continuing on..."
+fi
+
+echo "Running test suite scripts from $DIR"
+cd "$DIR"
+shopt -s nullglob
+ls
+for I in *; do
+    if [ -f $I -a -x $I ]; then ./$I; fi
+done

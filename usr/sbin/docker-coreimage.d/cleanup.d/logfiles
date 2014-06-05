@@ -1,3 +1,0 @@
-match /var/log/*.log
-match /var/log/*/*.log
-match /var/log/upstart

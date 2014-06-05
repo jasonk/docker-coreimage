@@ -1,0 +1,5 @@
+#!/bin/bash
+### sh shell format (separate 'export' after declaration)
+
+formatdump "%s=\"%s\"\n"
+for K in $(keys); do echo "export $K"; done

@@ -1,0 +1,23 @@
+#!/bin/bash
+# one-time system startup tasks
+. /etc/runit/lib.sh
+
+echo "runit - begin stage 1"
+touch /etc/runit/stopit
+chmod 0 /etc/runit/stopit
+
+/usr/sbin/docker-coreimage environment sh > /etc/environment.sh
+. /etc/environment.sh
+
+for script in /etc/startup/*; do
+    if [ -x $script ]; then
+        echo "Running startup script '$script'"
+        $script
+        /usr/sbin/docker-coreimage environment sh > /etc/environment.sh
+        . /etc/environment.sh
+    fi
+done
+
+update-service --list
+
+echo "runit - end stage 1"

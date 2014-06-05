@@ -1,0 +1,4 @@
+#!/bin/bash
+### bash shell format (more compact than 'sh')
+
+formatdump "export %s=\"%s\"\n"

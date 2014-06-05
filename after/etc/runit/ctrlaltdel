@@ -1,7 +1,11 @@
 #!/bin/sh
-
+. /etc/runit/lib.sh
 PATH=/bin:/usr/bin
+
+echo "runit - begin ctrlaltdel"
 
 touch /etc/runit/stopit
 chmod 100 /etc/runit/stopit
 echo "System is going down now..."
+
+echo "runit - end ctrlaltdel"

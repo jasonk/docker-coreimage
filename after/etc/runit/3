@@ -1,10 +1,10 @@
-#!/bin/sh
-exec 2>&1
+#!/bin/bash
+. /etc/runit/lib.sh
 
-PATH=/sbin:/bin:/usr/sbin:/usr/bin
-
-. /srv/environment.sh
+echo "runit - begin stage 3"
 
 echo 'Waiting for services to stop...'
 sv -w196 force-stop /etc/service/*
 sv exit /etc/service/*
+
+echo "runit - end stage 3"

@@ -78,32 +78,62 @@ that don't need to be running all the time.
 The default configuration uses runit to manage xinetd and cron, and uses xinetd
 to manage some helpful network utilities.
 
-The service configuration for all services is stored in /srv/services.  You can
-see what services are available in an image by looking at the contents of this
-directory.  Subdirectories of /srv/services contain configuration for runit,
-while xinetd configured services just have a file in /srv/services.
-
-    % ls -F /srv/services
-    cron/   sshd    xinetd/
-
 Building your own images based on jasonk/coreimage
 ==================================================
 
-To build your own image, you can either use [my docker-builder
-tool](http://github.com/jasonk/docker-builder), or create your own Dockerfile.
-
-    % ls
-    Dockerfile install.sh cleanup.sh
-    % cat Dockerfile
-    # Use jasonk/baseimage as the base image.  If you want reproducible builds
-    # you should specify a specific version, rather than :latest.
-    FROM jasonk/coreimage:<VERSION>
+First, create a directory and a Dockerfile for your new image, and make sure
+the Dockerfile starts with this coreimage as it's base.
+    % mkdir my-image
+    % cd my-image
+    % cat <<END > Dockerfile
+    FROM jasonk/docker-coreimage:latest
     
     # Set correct environment variables.
     ENV HOME /root
 
     # Run whatever additional commands you want to run here..
     RUN ....
+    END
+
+Adding additional services
+==========================
+
+runit services
+--------------
+
+To add a service that should be monitored by runit, create a runit
+configuration directory in /etc/sv:
+
+    % mkdir my-service
+    % cat <<END > my-service/run
+    #!/bin/sh
+    exec /app/my-service-runner
+    END
+
+Then in your Dockerfile:
+
+    ADD my-service /etc/sv/
+
+xinetd services
+---------------
+
+To add a service that should be monitored by xinetd, create a configuration
+file in /etc/xinetd.d:
+
+    % cat <<END > myservice.conf
+    service myservice {
+        socket_type = stream
+        protocol = tcp
+        wait = no
+        user = root
+        server = /usr/local/sbin/myservice
+        instances = 2
+    }
+    END
+
+Then in your Dockerfile:
+
+    ADD myservice.conf /etc/xinetd.d/myservice
 
 Author and Related Information
 ==============================

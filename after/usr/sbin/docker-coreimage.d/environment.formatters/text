@@ -1,0 +1,5 @@
+#!/bin/bash
+### Text format for easy human consumption
+
+echo "Environment Variables:"
+formatdump "    %-20s : %s\n"

@@ -1,0 +1,6 @@
+#!/bin/bash
+### Text format for easy human consumption
+
+echo "<vars>"
+formatdump "  <var name=\"%s\" value=\"%s\"/>\n"
+echo "</vars>"
