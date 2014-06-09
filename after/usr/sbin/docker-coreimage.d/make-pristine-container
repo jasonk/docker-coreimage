@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cleanup-container
+docker-coreimage cleanup-container
 
 rm -f /etc/ssh/ssh_host_*
 rm -f /etc/hostid
